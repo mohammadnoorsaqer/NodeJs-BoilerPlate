@@ -9,7 +9,7 @@ const errorConverter = (err, req, res, next) => {
     error = new ApiError(
       httpStatus.BAD_REQUEST,
       err.errors.map((e) => e.message).join(", "),
-      true,
+      "",
       err.stack
     );
   }
@@ -19,7 +19,7 @@ const errorConverter = (err, req, res, next) => {
     error = new ApiError(
       httpStatus.BAD_REQUEST,
       err.errors.map((e) => e.message).join(", "),
-      true,
+      "",
       err.stack
     );
   } else if (err.isJoi) {
