@@ -8,15 +8,15 @@ const isProduction = config.NODE_ENV === 'production';
 
 // BullMQ connection
 const bullmqConnection = {
-  host: config.REDIS_HOST,
-  port: config.REDIS_PORT,
-  password: config.REDIS_PASSWORD || undefined,
+  host: config.redis.host,
+  port: config.redis.port,
+  password: config.redis.password || undefined,
 };
 
 // Optional wait-for-Redis helper
 const waitForRedis = async () => {
   const client = Redis.createClient({
-    url: `redis://:${config.REDIS_PASSWORD}@${config.REDIS_HOST}:${config.REDIS_PORT}`,
+    url: `redis://:${config.redis.password}@${config.redis.host}:${config.redis.port}`,
     socket: { connectTimeout: 5000 },
   });
 
