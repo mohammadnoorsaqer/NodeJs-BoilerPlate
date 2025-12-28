@@ -29,7 +29,7 @@ const waitForRedis = async () => {
       connected = true;
       logger.info('✅ Redis is ready for BullMQ');
       await client.disconnect();
-    } catch (err) {
+    } catch  {
       logger.warn('Waiting for Redis... retrying in 2s');
       await new Promise((r) => setTimeout(r, 2000));
     }

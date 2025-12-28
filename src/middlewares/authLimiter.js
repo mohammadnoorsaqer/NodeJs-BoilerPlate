@@ -40,13 +40,19 @@ const authLimiter = async (req, res, next) => {
 
     let retrySeconds = 0; // ✅ FIXED
 
-    if (slowerBruteRes && slowerBruteRes.consumedPoints > maxAttemptsPerDay) {
+    if (
+      slowerBruteRes &&
+      slowerBruteRes.consumedPoints > config.rateLimiter.maxAttemptsPerDay
+    ) {
       retrySeconds = Math.floor(slowerBruteRes.msBeforeNext / 1000);
-    } else if (emailIpRes && emailIpRes.consumedPoints > maxAttemptsByIpEmail) {
+    } else if (
+      emailIpRes &&
+      emailIpRes.consumedPoints > config.rateLimiter.maxAttemptsByIpEmail
+    ) {
       retrySeconds = Math.floor(emailIpRes.msBeforeNext / 1000);
     } else if (
       emailBruteRes &&
-      emailBruteRes.consumedPoints > maxAttemptsPerEmail
+      emailBruteRes.consumedPoints > config.rateLimiter.maxAttemptsPerEmail
     ) {
       retrySeconds = Math.floor(emailBruteRes.msBeforeNext / 1000);
     }

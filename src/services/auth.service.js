@@ -107,7 +107,7 @@ async function login(email, password, ipAddress) {
       emailIpBruteLimiter.delete(`${email}_${ipAddress}`),
       emailBruteLimiter.delete(email),
     ]);
-  } catch (error) {
+  } catch {
     // Ignore deletion errors
   }
 
@@ -211,7 +211,11 @@ async function logout(userId, accessToken) {
       if (expiresIn > 0) {
         await redisClient.setEx(`blacklist:${accessToken}`, expiresIn, "1");
       }
-    } catch (error) {}
+    } catch (err){
+      if(process.env.NODE_ENV === 'development'){
+        console.warn(err);
+      }
+    }
   }
 
   return { success: true };

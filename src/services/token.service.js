@@ -41,7 +41,7 @@ const verifyToken = async (token, type) => {
     }
 
     return payload;
-  } catch (error) {
+  } catch  {
     throw new ApiError(
       httpStatus.UNAUTHORIZED,
       "Invalid token",

@@ -9,6 +9,9 @@ const { postgresClient } = require("./config/postgres"); // Raw Postgres
 const { errorConverter, errorHandler } = require("./middlewares/error");
 const passport = require("passport");
 const { jwtStrategy } = require("./config/passport");
+const { xss } = require("express-xss-sanitizer");
+const helmet = require("helmet");
+const cors = require("cors");
 
 const routes = require("./routes/v1");
 app.use((req, res, next) => {
@@ -20,6 +23,12 @@ app.use((req, res, next) => {
 // JSON middleware
 app.use(express.json());
 
+//Security
+app.use(xss());
+app.use(helmet());
+
+//Enabling All cors
+app.use(cors());
 // Logging middleware
 app.use(morgan.successHandler);
 app.use(morgan.errorHandler);
@@ -37,7 +46,9 @@ app.use("/v1", routes);
 // --------------------
 app.use((req, res, next) => {
   // Try this first:
-  next(new ApiError(httpStatus.NOT_FOUND, "Not found", "لم يتم العثور على الصفحة"));
+  next(
+    new ApiError(httpStatus.NOT_FOUND, "Not found", "لم يتم العثور على الصفحة")
+  );
 });
 
 // convert error to ApiError, if needed
