@@ -1,6 +1,6 @@
 // server.js (or index.js)
 const http = require('http');
-const express = require('express');  // <-- add this
+const express = require('express'); // <-- add this
 const config = require('./config/config');
 const loader = require('./loaders'); // your loader index.js
 const logger = require('./config/logger');
@@ -32,8 +32,8 @@ const unexpectedErrorHandler = (server) => (error) => {
 };
 
 const startServer = async () => {
-  const app = express();  // <-- create Express app instance
-  await loader(app);      // pass it to your loaders
+  const app = express(); // <-- create Express app instance
+  await loader(app); // pass it to your loaders
 
   const httpServer = http.createServer(app);
   const server = httpServer.listen(config.PORT, () => {
