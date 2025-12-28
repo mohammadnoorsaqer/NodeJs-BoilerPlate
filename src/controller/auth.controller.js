@@ -46,8 +46,6 @@ const refreshToken = catchAsync(async (req, res) => {
   );
 });
 const logout = catchAsync(async (req, res) => {
-  // Best Practice: Logout requires valid access token (user must be authenticated)
-  // If access token is expired, user is already effectively logged out
   const userId = req.user.id;
   const authHeader = req.headers.authorization;
   const accessToken = authHeader ? authHeader.split(' ')[1] : null;
