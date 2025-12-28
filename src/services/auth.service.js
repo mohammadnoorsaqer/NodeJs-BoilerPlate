@@ -5,10 +5,61 @@ const tokenService = require("./token.service");
 const ApiError = require("../utils/ApiError");
 const { tokenTypes } = require("../config/tokens");
 const redisClient = require("../config/redis");
-async function login(email, password) {
+const {
+  emailIpBruteLimiter,
+  slowerBruteLimiter,
+  emailBruteLimiter,
+} = require("../middlewares/authLimiter");
+async function login(email, password, ipAddress) {
+  // Consume slower brute limiter first (IP-based)
+  try {
+    await slowerBruteLimiter.consume(ipAddress);
+  } catch (rejRes) {
+    // Rate limit exceeded for this IP
+    const retrySeconds = Math.floor(rejRes.msBeforeNext / 1000);
+    throw new ApiError(
+      httpStatus.TOO_MANY_REQUESTS,
+      "Too many requests from this IP",
+      "عدد كبير من المحاولات من هذا العنوان",
+      true,
+      retrySeconds
+    );
+  }
+
+  // Consume email brute limiter (email-based across all IPs)
+  try {
+    await emailBruteLimiter.consume(email);
+  } catch (rejRes) {
+    // Rate limit exceeded for this email
+    const retrySeconds = Math.floor(rejRes.msBeforeNext / 1000);
+    throw new ApiError(
+      httpStatus.TOO_MANY_REQUESTS,
+      "Too many attempts for this email address",
+      "عدد كبير من المحاولات لهذا البريد الإلكتروني",
+      true,
+      retrySeconds
+    );
+  }
+
+  // Get user
   const user = await userService.getUserByEmail(email);
 
+  // Check if user exists
   if (!user) {
+    // Consume email+IP limiter for failed attempt
+    try {
+      await emailIpBruteLimiter.consume(`${email}_${ipAddress}`);
+    } catch (rejRes) {
+      const retrySeconds = Math.floor(rejRes.msBeforeNext / 1000);
+      throw new ApiError(
+        httpStatus.TOO_MANY_REQUESTS,
+        "Too many failed attempts for this account from your IP",
+        "عدد كبير من المحاولات الفاشلة لهذا الحساب من عنوان IP الخاص بك",
+        true,
+        retrySeconds
+      );
+    }
+
     throw new ApiError(
       httpStatus.UNAUTHORIZED,
       "Invalid email or password",
@@ -29,11 +80,35 @@ async function login(email, password) {
   const isPasswordMatch = await bcrypt.compare(password, user.password_hash);
 
   if (!isPasswordMatch) {
+    // Consume email+IP limiter for failed attempt
+    try {
+      await emailIpBruteLimiter.consume(`${email}_${ipAddress}`);
+    } catch (rejRes) {
+      const retrySeconds = Math.floor(rejRes.msBeforeNext / 1000);
+      throw new ApiError(
+        httpStatus.TOO_MANY_REQUESTS,
+        "Too many failed attempts for this account from your IP",
+        "عدد كبير من المحاولات الفاشلة لهذا الحساب من عنوان IP الخاص بك",
+        true,
+        retrySeconds
+      );
+    }
+
     throw new ApiError(
       httpStatus.UNAUTHORIZED,
       "Invalid email or password",
       "البريد الإلكتروني أو كلمة المرور غير صحيحة"
     );
+  }
+
+  // Successful login - reset counters
+  try {
+    await Promise.all([
+      emailIpBruteLimiter.delete(`${email}_${ipAddress}`),
+      emailBruteLimiter.delete(email),
+    ]);
+  } catch (error) {
+    // Ignore deletion errors
   }
 
   // Update last login
@@ -42,7 +117,6 @@ async function login(email, password) {
   // Return user without sensitive data
   const userObj = user.get({ plain: true });
   delete userObj.password_hash;
-
   return userObj;
 }
 

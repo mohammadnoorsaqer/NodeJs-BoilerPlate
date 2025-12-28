@@ -1,21 +1,35 @@
-const { Client } = require('pg');
+// config/postgres.js
+const { Pool } = require('pg');
 const config = require('./config');
 const logger = require('./logger');
 
-let client;
+// Create a singleton pool instance
+const pool = new Pool(config.sqlDB);
 
-(async function name() {
-	client = new Client(config.sqlDB);
-	try {
-		await client.connect();
-		logger.info('Connect to postgress sucessfully');
-		return client;
-	} catch (error) {
-		logger.error('Connect to postgress error');
-		process.exit(1);
-	}
-})();
+let isConnected = false;
 
-module.exports = {
-	postgres: client,
+// Only log once when pool is ready
+pool.on('connect', () => {
+  if (!isConnected) {
+    logger.info('PostgreSQL connected successfully');
+    isConnected = true;
+  }
+});
+
+pool.on('error', (err) => {
+  logger.error('PostgreSQL error', err);
+  process.exit(1);
+});
+
+// Graceful shutdown
+const closePool = async () => {
+  try {
+    await pool.end();
+    logger.info('PostgreSQL pool closed');
+  } catch (err) {
+    logger.error('Error closing PostgreSQL pool', err);
+  }
 };
+
+module.exports = pool;
+module.exports.closePool = closePool;

@@ -20,7 +20,8 @@ const register = catchAsync(async (req, res) => {
 });
 const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
-  const user = await authService.login(email, password);
+  const ipAddress = req.connection.remoteAddress;
+  const user = await authService.login(email, password, ipAddress);
   const token = await tokenService.generateAuthTokens({
     userId: user.id,
     role: user.role,
@@ -48,8 +49,8 @@ const refreshToken = catchAsync(async (req, res) => {
 const logout = catchAsync(async (req, res) => {
   const userId = req.user.id;
   const authHeader = req.headers.authorization;
-  const accessToken = authHeader ? authHeader.split(' ')[1] : null;
-  
+  const accessToken = authHeader ? authHeader.split(" ")[1] : null;
+
   await authService.logout(userId, accessToken);
   return successResponse(
     res,

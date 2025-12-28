@@ -2,6 +2,7 @@ const config = require("../config/config");
 const logger = require("../config/logger");
 const ApiError = require("../utils/ApiError");
 const httpStatus = require("http-status").default;
+
 const errorConverter = (err, req, res, next) => {
   let error = err;
 
@@ -10,23 +11,30 @@ const errorConverter = (err, req, res, next) => {
       httpStatus.BAD_REQUEST,
       err.errors.map((e) => e.message).join(", "),
       "",
+      true,
       err.stack
     );
   }
-
-  // ✅ Sequelize unique constraint error
+  // Sequelize unique constraint error
   else if (err.name === "SequelizeUniqueConstraintError") {
     error = new ApiError(
       httpStatus.BAD_REQUEST,
       err.errors.map((e) => e.message).join(", "),
       "",
+      true,
       err.stack
     );
-  } else if (err.isJoi) {
-    error = new ApiError(httpStatus.BAD_REQUEST, null, true, err.stack);
+  } 
+  else if (err.isJoi) {
+    error = new ApiError(
+      httpStatus.BAD_REQUEST,
+      err.message,
+      null,
+      true,
+      err.stack
+    );
   }
-
-  // ❗ Convert unknown errors LAST
+  // Convert unknown errors LAST
   else if (!(err instanceof ApiError)) {
     const statusCode =
       err.statusCode && Number.isInteger(err.statusCode)
@@ -36,14 +44,14 @@ const errorConverter = (err, req, res, next) => {
     const message =
       err.message || httpStatus[statusCode] || "Internal Server Error";
 
-    error = new ApiError(statusCode, message, false, err.stack);
+    error = new ApiError(statusCode, message, null, false, err.stack);
   }
 
   next(error);
 };
 
 const errorHandler = (err, req, res, next) => {
-  let { statusCode, message, message_ar, stack } = err;
+  let { statusCode, message, message_ar, stack, retryAfter } = err;
 
   if (!statusCode || isNaN(statusCode)) {
     statusCode = 500;
@@ -61,9 +69,18 @@ const errorHandler = (err, req, res, next) => {
     code: statusCode,
     message,
     ...(message_ar && { message_ar }),
-    ...(config.env === "development" && { stack: err.stack }),
-    stack,
   };
+
+  // Add retryAfter for rate limiting (429 errors)
+  if (retryAfter) {
+    res.set("Retry-After", String(retryAfter));
+    response.retryAfter = retryAfter;
+  }
+
+  // Add stack trace only in development
+  if (config.env === "development" && stack) {
+    response.stack = stack;
+  }
 
   if (config.env === "development") {
     logger.error(err);
