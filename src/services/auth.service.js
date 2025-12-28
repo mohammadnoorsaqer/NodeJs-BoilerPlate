@@ -1,15 +1,15 @@
-const httpStatus = require("http-status").default;
-const bcrypt = require("bcryptjs");
-const userService = require("./user.service");
-const tokenService = require("./token.service");
-const ApiError = require("../utils/ApiError");
-const { tokenTypes } = require("../config/tokens");
-const redisClient = require("../config/redis");
+const httpStatus = require('http-status').default;
+const bcrypt = require('bcryptjs');
+const userService = require('./user.service');
+const tokenService = require('./token.service');
+const ApiError = require('../utils/ApiError');
+const { tokenTypes } = require('../config/tokens');
+const redisClient = require('../config/redis');
 const {
   emailIpBruteLimiter,
   slowerBruteLimiter,
   emailBruteLimiter,
-} = require("../middlewares/authLimiter");
+} = require('../middlewares/authLimiter');
 async function login(email, password, ipAddress) {
   // Consume slower brute limiter first (IP-based)
   try {
@@ -19,10 +19,10 @@ async function login(email, password, ipAddress) {
     const retrySeconds = Math.floor(rejRes.msBeforeNext / 1000);
     throw new ApiError(
       httpStatus.TOO_MANY_REQUESTS,
-      "Too many requests from this IP",
-      "عدد كبير من المحاولات من هذا العنوان",
+      'Too many requests from this IP',
+      'عدد كبير من المحاولات من هذا العنوان',
       true,
-      retrySeconds
+      retrySeconds,
     );
   }
 
@@ -34,10 +34,10 @@ async function login(email, password, ipAddress) {
     const retrySeconds = Math.floor(rejRes.msBeforeNext / 1000);
     throw new ApiError(
       httpStatus.TOO_MANY_REQUESTS,
-      "Too many attempts for this email address",
-      "عدد كبير من المحاولات لهذا البريد الإلكتروني",
+      'Too many attempts for this email address',
+      'عدد كبير من المحاولات لهذا البريد الإلكتروني',
       true,
-      retrySeconds
+      retrySeconds,
     );
   }
 
@@ -53,17 +53,17 @@ async function login(email, password, ipAddress) {
       const retrySeconds = Math.floor(rejRes.msBeforeNext / 1000);
       throw new ApiError(
         httpStatus.TOO_MANY_REQUESTS,
-        "Too many failed attempts for this account from your IP",
-        "عدد كبير من المحاولات الفاشلة لهذا الحساب من عنوان IP الخاص بك",
+        'Too many failed attempts for this account from your IP',
+        'عدد كبير من المحاولات الفاشلة لهذا الحساب من عنوان IP الخاص بك',
         true,
-        retrySeconds
+        retrySeconds,
       );
     }
 
     throw new ApiError(
       httpStatus.UNAUTHORIZED,
-      "Invalid email or password",
-      "البريد الإلكتروني أو كلمة المرور غير صحيحة"
+      'Invalid email or password',
+      'البريد الإلكتروني أو كلمة المرور غير صحيحة',
     );
   }
 
@@ -71,8 +71,8 @@ async function login(email, password, ipAddress) {
   if (!user.is_active || user.is_deleted) {
     throw new ApiError(
       httpStatus.UNAUTHORIZED,
-      "Your account is inactive",
-      "حسابك غير نشط"
+      'Your account is inactive',
+      'حسابك غير نشط',
     );
   }
 
@@ -87,17 +87,17 @@ async function login(email, password, ipAddress) {
       const retrySeconds = Math.floor(rejRes.msBeforeNext / 1000);
       throw new ApiError(
         httpStatus.TOO_MANY_REQUESTS,
-        "Too many failed attempts for this account from your IP",
-        "عدد كبير من المحاولات الفاشلة لهذا الحساب من عنوان IP الخاص بك",
+        'Too many failed attempts for this account from your IP',
+        'عدد كبير من المحاولات الفاشلة لهذا الحساب من عنوان IP الخاص بك',
         true,
-        retrySeconds
+        retrySeconds,
       );
     }
 
     throw new ApiError(
       httpStatus.UNAUTHORIZED,
-      "Invalid email or password",
-      "البريد الإلكتروني أو كلمة المرور غير صحيحة"
+      'Invalid email or password',
+      'البريد الإلكتروني أو كلمة المرور غير صحيحة',
     );
   }
 
@@ -125,7 +125,7 @@ async function refreshAuthToken(refreshToken) {
     // Verify refresh token
     const payload = await tokenService.verifyToken(
       refreshToken,
-      tokenTypes.REFRESH
+      tokenTypes.REFRESH,
     );
 
     // Get user
@@ -134,8 +134,8 @@ async function refreshAuthToken(refreshToken) {
     if (!user) {
       throw new ApiError(
         httpStatus.UNAUTHORIZED,
-        "User not found",
-        "المستخدم غير موجود"
+        'User not found',
+        'المستخدم غير موجود',
       );
     }
 
@@ -143,8 +143,8 @@ async function refreshAuthToken(refreshToken) {
     if (user.is_deleted || !user.is_active) {
       throw new ApiError(
         httpStatus.UNAUTHORIZED,
-        "User account is inactive",
-        "حساب المستخدم غير نشط"
+        'User account is inactive',
+        'حساب المستخدم غير نشط',
       );
     }
 
@@ -155,8 +155,8 @@ async function refreshAuthToken(refreshToken) {
     ) {
       throw new ApiError(
         httpStatus.UNAUTHORIZED,
-        "Token has been revoked",
-        "تم إلغاء الرمز المميز"
+        'Token has been revoked',
+        'تم إلغاء الرمز المميز',
       );
     }
 
@@ -165,8 +165,8 @@ async function refreshAuthToken(refreshToken) {
     if (isBlacklisted) {
       throw new ApiError(
         httpStatus.UNAUTHORIZED,
-        "Token has been revoked",
-        "تم إلغاء الرمز المميز"
+        'Token has been revoked',
+        'تم إلغاء الرمز المميز',
       );
     }
 
@@ -183,8 +183,8 @@ async function refreshAuthToken(refreshToken) {
     }
     throw new ApiError(
       httpStatus.UNAUTHORIZED,
-      "Invalid refresh token",
-      "رمز التحديث غير صالح"
+      'Invalid refresh token',
+      'رمز التحديث غير صالح',
     );
   }
 }
@@ -194,8 +194,8 @@ async function logout(userId, accessToken) {
   if (!user) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
-      "User not found",
-      "المستخدم غير موجود"
+      'User not found',
+      'المستخدم غير موجود',
     );
   }
   const newTokenVersion = (user.token_version || 0) + 1;
@@ -204,15 +204,15 @@ async function logout(userId, accessToken) {
     try {
       const tokenPayload = await tokenService.verifyToken(
         accessToken,
-        tokenTypes.ACCESS
+        tokenTypes.ACCESS,
       );
       const expiresIn = tokenPayload.exp - Math.floor(Date.now() / 1000);
 
       if (expiresIn > 0) {
-        await redisClient.setEx(`blacklist:${accessToken}`, expiresIn, "1");
+        await redisClient.setEx(`blacklist:${accessToken}`, expiresIn, '1');
       }
-    } catch (err){
-      if(process.env.NODE_ENV === 'development'){
+    } catch (err) {
+      if (process.env.NODE_ENV === 'development') {
         console.warn(err);
       }
     }

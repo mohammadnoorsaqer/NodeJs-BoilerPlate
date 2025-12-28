@@ -1,7 +1,7 @@
-const http = require("http");
-const config = require("./config/config");
-const app = require("./app");
-const logger = require("./config/logger");
+const http = require('http');
+const config = require('./config/config');
+const app = require('./app');
+const logger = require('./config/logger');
 const redisClient = require('./config/redis');
 const { closePool } = require('./config/postgres');
 
@@ -14,19 +14,16 @@ const server = httpServer.listen(config.PORT, () => {
 const exitHandler = async () => {
   if (server) {
     server.close(async () => {
-      logger.info("Server closed");
-      
+      logger.info('Server closed');
+
       // Close database connections gracefully
       try {
-        await Promise.all([
-          redisClient.quit(),
-          closePool()
-        ]);
-        logger.info("Database connections closed");
+        await Promise.all([redisClient.quit(), closePool()]);
+        logger.info('Database connections closed');
       } catch (error) {
-        logger.error("Error closing database connections", error);
+        logger.error('Error closing database connections', error);
       }
-      
+
       process.exit(0); // Exit with success code after graceful shutdown
     });
   } else {
@@ -35,19 +32,19 @@ const exitHandler = async () => {
 };
 
 const unexpectedErrorHandler = (error) => {
-  logger.error("Unexpected error:", error);
+  logger.error('Unexpected error:', error);
   exitHandler();
 };
 
-process.on("uncaughtException", unexpectedErrorHandler);
-process.on("unhandledRejection", unexpectedErrorHandler);
+process.on('uncaughtException', unexpectedErrorHandler);
+process.on('unhandledRejection', unexpectedErrorHandler);
 
-process.on("SIGTERM", () => {
-  logger.info("SIGTERM received");
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM received');
   exitHandler();
 });
 
-process.on("SIGINT", () => {
-  logger.info("SIGINT received (Ctrl+C)");
+process.on('SIGINT', () => {
+  logger.info('SIGINT received (Ctrl+C)');
   exitHandler();
 });

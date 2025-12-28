@@ -1,28 +1,28 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const { authController } = require("../../controller");
-const validate = require("../../middlewares/validate");
-const auth = require("../../middlewares/auth");
-const { userValidation } = require("../../validation");
-const { authLimiter } = require("../../middlewares/authLimiter");
+const { authController } = require('../../controller');
+const validate = require('../../middlewares/validate');
+const auth = require('../../middlewares/auth');
+const { userValidation } = require('../../validation');
+const { authLimiter } = require('../../middlewares/authLimiter');
 
 router.post(
-  "/register",
+  '/register',
   validate(userValidation.registerSchema),
-  authController.register
+  authController.register,
 );
 router.post(
-  "/login",
+  '/login',
   authLimiter,
   validate(userValidation.loginSchema),
-  authController.login
+  authController.login,
 );
 router.post(
-  "/refresh-token",
+  '/refresh-token',
   validate(userValidation.refreshTokenSchema),
-  authController.refreshToken
+  authController.refreshToken,
 );
 // Best Practice: Logout requires valid access token (user must be authenticated)
 // If access token is expired, user is already effectively logged out
-router.post("/logout", auth(), authController.logout);
+router.post('/logout', auth(), authController.logout);
 module.exports = router;

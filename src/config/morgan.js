@@ -1,28 +1,28 @@
 // config/morgan.js
-const morgan = require("morgan");
-const fs = require("fs");
-const path = require("path");
-const logger = require("./logger");
-const config = require("./config");
+const morgan = require('morgan');
+const fs = require('fs');
+const path = require('path');
+const logger = require('./logger');
+const config = require('./config');
 
 // Optional file logging
-const logFilePath = path.join(__dirname, "..", "logs/access.log");
+const logFilePath = path.join(__dirname, '..', 'logs/access.log');
 if (!fs.existsSync(path.dirname(logFilePath))) {
   fs.mkdirSync(path.dirname(logFilePath), { recursive: true });
 }
-const accessLogStream = fs.createWriteStream(logFilePath, { flags: "a" });
+const accessLogStream = fs.createWriteStream(logFilePath, { flags: 'a' });
 
 // Normalize IP (::1 => 127.0.0.1)
-morgan.token("ip", (req) => {
+morgan.token('ip', (req) => {
   const ip = req.ip || req.connection.remoteAddress;
-  return ip === "::1" ? "127.0.0.1" : ip;
+  return ip === '::1' ? '127.0.0.1' : ip;
 });
 
 // Optional message from res.locals.errorMessage
-morgan.token("message", (_req, res) => res.locals.errorMessage || "");
+morgan.token('message', (_req, res) => res.locals.errorMessage || '');
 
 // Format strings
-const getIpFormat = () => (config.NODE_ENV === "production" ? ":ip - " : "");
+const getIpFormat = () => (config.NODE_ENV === 'production' ? ':ip - ' : '');
 const successFormat = `${getIpFormat()}:method :url :status - :response-time ms`;
 const errorFormat = `${getIpFormat()}:method :url :status - :response-time ms - message: :message`;
 
@@ -32,7 +32,7 @@ const successHandler = morgan(successFormat, {
   stream: {
     write: (message) => {
       logger.info(message.trim());
-      accessLogStream.write(message + "\n"); // optional file logging
+      accessLogStream.write(message + '\n'); // optional file logging
     },
   },
 });
@@ -43,7 +43,7 @@ const errorHandler = morgan(errorFormat, {
   stream: {
     write: (message) => {
       logger.error(message.trim());
-      accessLogStream.write(message + "\n"); // optional file logging
+      accessLogStream.write(message + '\n'); // optional file logging
     },
   },
 });

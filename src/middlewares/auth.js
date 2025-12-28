@@ -11,11 +11,11 @@ const verifyCallback = (req, resolve, reject) => async (err, user, info) => {
       new ApiError(
         httpStatus.UNAUTHORIZED,
         'Please authenticate',
-        'الرجاء المصادقة'
-      )
+        'الرجاء المصادقة',
+      ),
     );
   }
-  
+
   req.user = user;
   resolve();
 };
@@ -24,33 +24,35 @@ const verifyCallback = (req, resolve, reject) => async (err, user, info) => {
  * Auth middleware with optional role checking
  * @param {...string} requiredRoles - Required roles (optional)
  */
-const auth = (...requiredRoles) => async (req, res, next) => {
-  return new Promise((resolve, reject) => {
-    passport.authenticate(
-      'jwt',
-      { session: false },
-      verifyCallback(req, resolve, reject)
-    )(req, res, next);
-  })
-    .then(() => {
-      // If specific roles are required, check them
-      if (requiredRoles.length) {
-        const userRole = req.user.role;
-        const hasRequiredRole = requiredRoles.includes(userRole);
-        
-        if (!hasRequiredRole) {
-          return Promise.reject(
-            new ApiError(
-              httpStatus.FORBIDDEN,
-              'Insufficient permissions',
-              'صلاحيات غير كافية'
-            )
-          );
-        }
-      }
-      next();
+const auth =
+  (...requiredRoles) =>
+  async (req, res, next) => {
+    return new Promise((resolve, reject) => {
+      passport.authenticate(
+        'jwt',
+        { session: false },
+        verifyCallback(req, resolve, reject),
+      )(req, res, next);
     })
-    .catch((err) => next(err));
-};
+      .then(() => {
+        // If specific roles are required, check them
+        if (requiredRoles.length) {
+          const userRole = req.user.role;
+          const hasRequiredRole = requiredRoles.includes(userRole);
+
+          if (!hasRequiredRole) {
+            return Promise.reject(
+              new ApiError(
+                httpStatus.FORBIDDEN,
+                'Insufficient permissions',
+                'صلاحيات غير كافية',
+              ),
+            );
+          }
+        }
+        next();
+      })
+      .catch((err) => next(err));
+  };
 
 module.exports = auth;

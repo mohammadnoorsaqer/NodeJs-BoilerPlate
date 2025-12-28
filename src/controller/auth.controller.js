@@ -1,7 +1,7 @@
-const catchAsync = require("../utils/catchAsync");
-const httpStatus = require("http-status").default;
-const { successResponse } = require("../utils/apiResponse");
-const { userService, tokenService, authService } = require("../services");
+const catchAsync = require('../utils/catchAsync');
+const httpStatus = require('http-status').default;
+const { successResponse } = require('../utils/apiResponse');
+const { userService, tokenService, authService } = require('../services');
 const register = catchAsync(async (req, res) => {
   const user = req.body;
   const result = await userService.createUser(user);
@@ -12,10 +12,10 @@ const register = catchAsync(async (req, res) => {
   return successResponse(
     res,
     httpStatus.CREATED,
-    "User registered successfully",
-    "لقد تم تسجيل المستخدم بنجاح",
+    'User registered successfully',
+    'لقد تم تسجيل المستخدم بنجاح',
     result,
-    token
+    token,
   );
 });
 const login = catchAsync(async (req, res) => {
@@ -29,10 +29,10 @@ const login = catchAsync(async (req, res) => {
   return successResponse(
     res,
     httpStatus.OK,
-    "User logged in successfully",
-    "لقد تم تسجيل المستخدم بنجاح",
+    'User logged in successfully',
+    'لقد تم تسجيل المستخدم بنجاح',
     user,
-    token
+    token,
   );
 });
 const refreshToken = catchAsync(async (req, res) => {
@@ -41,22 +41,22 @@ const refreshToken = catchAsync(async (req, res) => {
   return successResponse(
     res,
     httpStatus.OK,
-    "Token refreshed successfully",
-    "تم تحديث الرمز المميز بنجاح",
-    token
+    'Token refreshed successfully',
+    'تم تحديث الرمز المميز بنجاح',
+    token,
   );
 });
 const logout = catchAsync(async (req, res) => {
   const userId = req.user.id;
   const authHeader = req.headers.authorization;
-  const accessToken = authHeader ? authHeader.split(" ")[1] : null;
+  const accessToken = authHeader ? authHeader.split(' ')[1] : null;
 
   await authService.logout(userId, accessToken);
   return successResponse(
     res,
     httpStatus.OK,
-    "Logged out successfully",
-    "تم تسجيل الخروج بنجاح"
+    'Logged out successfully',
+    'تم تسجيل الخروج بنجاح',
   );
 });
 module.exports = {

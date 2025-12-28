@@ -1,37 +1,36 @@
-const config = require("../config/config");
-const logger = require("../config/logger");
-const ApiError = require("../utils/ApiError");
-const httpStatus = require("http-status").default;
+const config = require('../config/config');
+const logger = require('../config/logger');
+const ApiError = require('../utils/ApiError');
+const httpStatus = require('http-status').default;
 
 const errorConverter = (err, req, res, next) => {
   let error = err;
 
-  if (err.name === "SequelizeValidationError") {
+  if (err.name === 'SequelizeValidationError') {
     error = new ApiError(
       httpStatus.BAD_REQUEST,
-      err.errors.map((e) => e.message).join(", "),
-      "",
+      err.errors.map((e) => e.message).join(', '),
+      '',
       true,
-      err.stack
+      err.stack,
     );
   }
   // Sequelize unique constraint error
-  else if (err.name === "SequelizeUniqueConstraintError") {
+  else if (err.name === 'SequelizeUniqueConstraintError') {
     error = new ApiError(
       httpStatus.BAD_REQUEST,
-      err.errors.map((e) => e.message).join(", "),
-      "",
+      err.errors.map((e) => e.message).join(', '),
+      '',
       true,
-      err.stack
+      err.stack,
     );
-  } 
-  else if (err.isJoi) {
+  } else if (err.isJoi) {
     error = new ApiError(
       httpStatus.BAD_REQUEST,
       err.message,
       null,
       true,
-      err.stack
+      err.stack,
     );
   }
   // Convert unknown errors LAST
@@ -42,7 +41,7 @@ const errorConverter = (err, req, res, next) => {
         : httpStatus.INTERNAL_SERVER_ERROR;
 
     const message =
-      err.message || httpStatus[statusCode] || "Internal Server Error";
+      err.message || httpStatus[statusCode] || 'Internal Server Error';
 
     error = new ApiError(statusCode, message, null, false, err.stack);
   }
@@ -57,10 +56,10 @@ const errorHandler = (err, req, res, _next) => {
     statusCode = 500;
   }
 
-  if (config.env === "production" && !err.isOperational) {
+  if (config.env === 'production' && !err.isOperational) {
     statusCode = 500;
-    message = "Internal Server Error";
-    message_ar = "خطأ في الخادم الداخلي";
+    message = 'Internal Server Error';
+    message_ar = 'خطأ في الخادم الداخلي';
   }
 
   res.locals.errorMessage = err.message;
@@ -73,16 +72,16 @@ const errorHandler = (err, req, res, _next) => {
 
   // Add retryAfter for rate limiting (429 errors)
   if (retryAfter) {
-    res.set("Retry-After", String(retryAfter));
+    res.set('Retry-After', String(retryAfter));
     response.retryAfter = retryAfter;
   }
 
   // Add stack trace only in development
-  if (config.env === "development" && stack) {
+  if (config.env === 'development' && stack) {
     response.stack = stack;
   }
 
-  if (config.env === "development") {
+  if (config.env === 'development') {
     logger.error(err);
   }
 

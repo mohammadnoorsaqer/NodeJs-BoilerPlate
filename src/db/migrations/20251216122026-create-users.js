@@ -1,8 +1,8 @@
-"use strict";
+'use strict';
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("users", {
+    await queryInterface.createTable('users', {
       id: {
         allowNull: false,
         primaryKey: true,
@@ -39,12 +39,12 @@ module.exports = {
       },
 
       gender: {
-        type: Sequelize.ENUM("male", "female"),
+        type: Sequelize.ENUM('male', 'female'),
         allowNull: true,
       },
 
       role: {
-        type: Sequelize.ENUM("user", "admin", "superadmin"),
+        type: Sequelize.ENUM('user', 'admin', 'superadmin'),
         allowNull: false,
       },
 
@@ -121,32 +121,32 @@ module.exports = {
       token_version: {
         type: Sequelize.INTEGER,
         defaultValue: 0,
-        comment: "Increment this to invalidate all user tokens instantly",
+        comment: 'Increment this to invalidate all user tokens instantly',
       },
 
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.fn("now"),
+        defaultValue: Sequelize.fn('now'),
       },
 
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.fn("now"),
+        defaultValue: Sequelize.fn('now'),
       },
     });
   },
 
   async down(queryInterface) {
-    await queryInterface.dropTable("users");
+    await queryInterface.dropTable('users');
 
     // IMPORTANT: drop ENUM types manually (PostgreSQL)
     await queryInterface.sequelize.query(
-      'DROP TYPE IF EXISTS "enum_users_gender";'
+      'DROP TYPE IF EXISTS "enum_users_gender";',
     );
     await queryInterface.sequelize.query(
-      'DROP TYPE IF EXISTS "enum_users_role";'
+      'DROP TYPE IF EXISTS "enum_users_role";',
     );
   },
 };

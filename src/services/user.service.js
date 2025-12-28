@@ -12,7 +12,7 @@ async function createUser(userBody) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
       'Email already taken',
-      'البريد الإلكتروني مستخدم بالفعل'
+      'البريد الإلكتروني مستخدم بالفعل',
     );
   }
 
@@ -29,11 +29,11 @@ async function createUser(userBody) {
   userBody.last_login = new Date();
 
   const user = await users.create(userBody);
-  
+
   // Remove sensitive data
   const userObj = user.get({ plain: true });
   delete userObj.password_hash;
-  
+
   return userObj;
 }
 
@@ -52,7 +52,6 @@ async function getUserByEmail(email) {
   const user = await users.findOne({ where: { email } });
   return user;
 }
-
 
 module.exports = {
   createUser,

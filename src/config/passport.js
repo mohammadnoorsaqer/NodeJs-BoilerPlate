@@ -17,7 +17,7 @@ const jwtVerify = async (payload, done) => {
 
     // Find user by ID from token payload
     const user = await users.findByPk(payload.sub);
-    
+
     if (!user) {
       return done(null, false);
     }
@@ -29,7 +29,8 @@ const jwtVerify = async (payload, done) => {
 
     // Check token_version for token revocation
     // This is the primary mechanism for revoking tokens (e.g., on logout)
-    const tokenVersion = payload.tokenVersion !== undefined ? payload.tokenVersion : null;
+    const tokenVersion =
+      payload.tokenVersion !== undefined ? payload.tokenVersion : null;
     const userTokenVersion = user.token_version || 0;
 
     // If token_version doesn't match, token is revoked

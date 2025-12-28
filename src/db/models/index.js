@@ -15,7 +15,7 @@ const sequelize = new Sequelize(
   {
     ...config.sqlDB,
     logging: false,
-  }
+  },
 );
 
 fs.readdirSync(__dirname)
@@ -23,12 +23,12 @@ fs.readdirSync(__dirname)
     (file) =>
       file.indexOf('.') !== 0 &&
       file !== basename &&
-      file.slice(-9) === '.model.js'
+      file.slice(-9) === '.model.js',
   )
   .forEach((file) => {
     const model = require(path.join(__dirname, file))(
       sequelize,
-      Sequelize.DataTypes
+      Sequelize.DataTypes,
     );
     db[model.name] = model;
   });

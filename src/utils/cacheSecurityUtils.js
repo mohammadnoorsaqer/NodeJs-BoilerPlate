@@ -1,10 +1,10 @@
-const crypto = require("crypto");
+const crypto = require('crypto');
 
 // Utility functions for cache key sanitization
 const sanitizeString = (value, allowUnderscore = true) => {
   if (!value) return null;
   const pattern = allowUnderscore ? /[^a-zA-Z0-9_-]/g : /[^a-zA-Z0-9-]/g;
-  return String(value).replace(pattern, "").substring(0, 50);
+  return String(value).replace(pattern, '').substring(0, 50);
 };
 
 const sanitizeNumber = (value, defaultValue = 1, min = 1, max = 1000) => {
@@ -38,10 +38,10 @@ const containsDangerousPatterns = (key) => {
 };
 
 const createSecureCacheKey = (parts) => {
-  const key = parts.join(":");
+  const key = parts.join(':');
 
   if (containsDangerousPatterns(key)) {
-    throw new Error("Invalid cache key parameters detected");
+    throw new Error('Invalid cache key parameters detected');
   }
 
   return key;
@@ -49,17 +49,17 @@ const createSecureCacheKey = (parts) => {
 
 const hashFilters = (filters) => {
   const cleanParams = Object.fromEntries(
-    Object.entries(filters).filter(([_key, v]) => v !== undefined)
+    Object.entries(filters).filter(([_key, v]) => v !== undefined),
   );
 
   const paramString = JSON.stringify(
     cleanParams,
-    Object.keys(cleanParams).sort()
+    Object.keys(cleanParams).sort(),
   );
   return crypto
-    .createHash("sha256")
+    .createHash('sha256')
     .update(paramString)
-    .digest("hex")
+    .digest('hex')
     .substring(0, 16);
 };
 

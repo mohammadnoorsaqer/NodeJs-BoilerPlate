@@ -4,7 +4,7 @@ const successResponse = (
   enMessage,
   arMessage,
   data = null,
-  token = null
+  token = null,
 ) => {
   return res.status(statusCode).json({
     success: true,

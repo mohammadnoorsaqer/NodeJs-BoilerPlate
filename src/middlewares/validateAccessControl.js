@@ -1,6 +1,6 @@
-const httpStatus = require("http-status").default;
-const { roles } = require("../config/roles");
-const ApiError = require("../utils/ApiError");
+const httpStatus = require('http-status').default;
+const { roles } = require('../config/roles');
+const ApiError = require('../utils/ApiError');
 
 /**
  * Grant access based on role and resource
@@ -13,8 +13,8 @@ function grantAccess(action, resource) {
       if (!req.user || !req.user.role) {
         throw new ApiError(
           httpStatus.UNAUTHORIZED,
-          "Authentication required",
-          "المصادقة مطلوبة"
+          'Authentication required',
+          'المصادقة مطلوبة',
         );
       }
 
@@ -26,7 +26,7 @@ function grantAccess(action, resource) {
 
       // Modify action based on ownership (e.g., 'readAny' -> 'readOwn')
       const modifiedAction = isOwnResource
-        ? action.replace("Any", "Own")
+        ? action.replace('Any', 'Own')
         : action;
 
       // Check permission using AccessControl
@@ -37,8 +37,8 @@ function grantAccess(action, resource) {
       if (!permission.granted) {
         throw new ApiError(
           httpStatus.FORBIDDEN,
-          "You are not authorized to access this resource",
-          "ليس لديك صلاحية للوصول إلى هذا المورد"
+          'You are not authorized to access this resource',
+          'ليس لديك صلاحية للوصول إلى هذا المورد',
         );
       }
 

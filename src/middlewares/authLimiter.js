@@ -1,11 +1,11 @@
-const httpStatus = require("http-status").default;
-const ApiError = require("../utils/ApiError");
-const { RateLimiterPostgres } = require("rate-limiter-flexible");
-const config = require("../config/config");
-const postgres = require("../config/postgres");
+const httpStatus = require('http-status').default;
+const ApiError = require('../utils/ApiError');
+const { RateLimiterPostgres } = require('rate-limiter-flexible');
+const config = require('../config/config');
+const postgres = require('../config/postgres');
 const emailIpBruteLimiter = new RateLimiterPostgres({
   storeClient: postgres,
-  storeType: "pg",
+  storeType: 'pg',
   points: config.rateLimiter.maxAttemptsByIpEmail,
   duration: 60 * 10,
   blockDuration: 60 * 60 * 24,
@@ -13,7 +13,7 @@ const emailIpBruteLimiter = new RateLimiterPostgres({
 });
 const slowerBruteLimiter = new RateLimiterPostgres({
   storeClient: postgres,
-  storeType: "pg",
+  storeType: 'pg',
   points: config.rateLimiter.maxAttemptsPerDay,
   duration: 60 * 60 * 24,
   blockDuration: 60 * 60 * 24,
@@ -21,7 +21,7 @@ const slowerBruteLimiter = new RateLimiterPostgres({
 });
 const emailBruteLimiter = new RateLimiterPostgres({
   storeClient: postgres,
-  storeType: "pg",
+  storeType: 'pg',
   points: config.rateLimiter.maxAttemptsPerEmail,
   duration: 60 * 60 * 24,
   blockDuration: 60 * 60 * 24,
@@ -58,15 +58,15 @@ const authLimiter = async (req, res, next) => {
     }
 
     if (retrySeconds > 0) {
-      res.set("Retry-After", String(retrySeconds));
+      res.set('Retry-After', String(retrySeconds));
       return next(
         new ApiError(
           httpStatus.TOO_MANY_REQUESTS,
-          "Too many requests",
-          "عدد كبير من المحاولات، حاول لاحقاً",
+          'Too many requests',
+          'عدد كبير من المحاولات، حاول لاحقاً',
           null,
-          retrySeconds
-        )
+          retrySeconds,
+        ),
       );
     }
 

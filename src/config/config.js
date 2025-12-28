@@ -1,14 +1,14 @@
-const joi = require("joi");
-const dotenv = require("dotenv");
+const joi = require('joi');
+const dotenv = require('dotenv');
 dotenv.config();
-const logger = require("./logger"); // make sure you import your logger
+const logger = require('./logger'); // make sure you import your logger
 
 // Validate environment variables
 const envVarSchema = joi
   .object({
     NODE_ENV: joi
       .string()
-      .valid("development", "staging", "production")
+      .valid('development', 'staging', 'production')
       .required(),
     PORT: joi.number().required(),
     SQL_USERNAME: joi.string().required(),
@@ -47,7 +47,7 @@ module.exports = {
     database: envVars.SQL_DATABASE_NAME,
     host: envVars.SQL_HOST,
     port: process.env.DB_PORT || 5432,
-    dialect: "postgres",
+    dialect: 'postgres',
     pool: {
       max: 5,
       min: 0,

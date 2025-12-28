@@ -1,10 +1,10 @@
-const jwt = require("jsonwebtoken");
-const dayjs = require("dayjs");
-const config = require("../config/config");
-const { tokenTypes } = require("../config/tokens");
-const { users } = require("../db/models");
-const ApiError = require("../utils/ApiError");
-const httpStatus = require("http-status").default;
+const jwt = require('jsonwebtoken');
+const dayjs = require('dayjs');
+const config = require('../config/config');
+const { tokenTypes } = require('../config/tokens');
+const { users } = require('../db/models');
+const ApiError = require('../utils/ApiError');
+const httpStatus = require('http-status').default;
 
 /**
  * Generate JWT token
@@ -37,15 +37,15 @@ const verifyToken = async (token, type) => {
     const payload = jwt.verify(token, config.jwt.secret);
 
     if (payload.type !== type) {
-      throw new Error("Invalid token type");
+      throw new Error('Invalid token type');
     }
 
     return payload;
-  } catch  {
+  } catch {
     throw new ApiError(
       httpStatus.UNAUTHORIZED,
-      "Invalid token",
-      "الرمز غير صالح"
+      'Invalid token',
+      'الرمز غير صالح',
     );
   }
 };
@@ -57,7 +57,11 @@ const generateAuthTokens = async ({ userId, role }) => {
   const user = await users.findByPk(userId);
 
   if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found', 'المستخدم غير موجود');
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      'User not found',
+      'المستخدم غير موجود',
+    );
   }
 
   // Get current token_version from user (default to 0 if not set)
@@ -65,7 +69,7 @@ const generateAuthTokens = async ({ userId, role }) => {
 
   // Generate access token (short-lived)
   const accessTokenExpires = dayjs()
-    .add(config.jwt.JWT_ACCESS_EXPIRATION_MINUTES, "minutes")
+    .add(config.jwt.JWT_ACCESS_EXPIRATION_MINUTES, 'minutes')
     .unix();
 
   const accessToken = generateToken({
@@ -78,7 +82,7 @@ const generateAuthTokens = async ({ userId, role }) => {
 
   // Generate refresh token (long-lived)
   const refreshTokenExpires = dayjs()
-    .add(config.jwt.JWT_REFRESH_EXPIRATION_MINUTES, "days")
+    .add(config.jwt.JWT_REFRESH_EXPIRATION_MINUTES, 'days')
     .unix();
 
   const refreshToken = generateToken({
