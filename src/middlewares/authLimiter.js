@@ -1,33 +1,31 @@
 const httpStatus = require("http-status").default;
 const ApiError = require("../utils/ApiError");
 const { RateLimiterPostgres } = require("rate-limiter-flexible");
-const maxAttemptsPerDay = 100;
-const maxAttemptsByIpEmail = 10;
-const maxAttemptsPerEmail=50;
+const config = require("../config/config");
 const postgres = require("../config/postgres");
 const emailIpBruteLimiter = new RateLimiterPostgres({
   storeClient: postgres,
   storeType: "pg",
-  points: maxAttemptsByIpEmail,
+  points: config.rateLimiter.maxAttemptsByIpEmail,
   duration: 60 * 10,
   blockDuration: 60 * 60 * 24,
-  dbName: process.env.SQL_DATABASE_NAME,
+  dbName: config.sqlDB.database,
 });
 const slowerBruteLimiter = new RateLimiterPostgres({
   storeClient: postgres,
   storeType: "pg",
-  points: maxAttemptsPerDay,
+  points: config.rateLimiter.maxAttemptsPerDay,
   duration: 60 * 60 * 24,
   blockDuration: 60 * 60 * 24,
-  dbName: process.env.SQL_DATABASE_NAME,
+  dbName: config.sqlDB.database,
 });
 const emailBruteLimiter = new RateLimiterPostgres({
   storeClient: postgres,
   storeType: "pg",
-  points: maxAttemptsPerEmail,
+  points: config.rateLimiter.maxAttemptsPerEmail,
   duration: 60 * 60 * 24,
   blockDuration: 60 * 60 * 24,
-  dbName: process.env.SQL_DATABASE_NAME,
+  dbName: config.sqlDB.database,
 });
 const authLimiter = async (req, res, next) => {
   try {
@@ -46,8 +44,10 @@ const authLimiter = async (req, res, next) => {
       retrySeconds = Math.floor(slowerBruteRes.msBeforeNext / 1000);
     } else if (emailIpRes && emailIpRes.consumedPoints > maxAttemptsByIpEmail) {
       retrySeconds = Math.floor(emailIpRes.msBeforeNext / 1000);
-    }
-    else if(emailBruteRes && emailBruteRes.consumedPoints > maxAttemptsPerEmail){
+    } else if (
+      emailBruteRes &&
+      emailBruteRes.consumedPoints > maxAttemptsPerEmail
+    ) {
       retrySeconds = Math.floor(emailBruteRes.msBeforeNext / 1000);
     }
 

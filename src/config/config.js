@@ -26,6 +26,9 @@ const envVarSchema = joi
     AWS_SECRET_ACCESS_KEY: joi.string().required(),
     AWS_BUCKET_NAME: joi.string().required(),
     CDN_DOMAIN: joi.string().optional(),
+    MAX_ATTEMPS_PER_DAY: joi.number().required(),
+    MAX_ATTEMPS_BY_IP_EMAIL: joi.number().required(),
+    MAX_ATTEMPS_PER_EMAIL: joi.number().required(),
   })
   .unknown();
 
@@ -70,7 +73,14 @@ module.exports = {
   },
   jwt: {
     secret: envVars.JWT_SECRET,
-    JWT_ACCESS_EXPIRATION_MINUTES: Number(envVars.JWT_ACCESS_EXPIRATION_MINUTES) || 30,
-    JWT_REFRESH_EXPIRATION_MINUTES: Number(envVars.JWT_REFRESH_EXPIRATION_MINUTES) || 1440,
+    JWT_ACCESS_EXPIRATION_MINUTES:
+      Number(envVars.JWT_ACCESS_EXPIRATION_MINUTES) || 30,
+    JWT_REFRESH_EXPIRATION_MINUTES:
+      Number(envVars.JWT_REFRESH_EXPIRATION_MINUTES) || 1440,
+  },
+  rateLimiter: {
+    maxAttemptsPerDay: envVars.MAX_ATTEMPS_PER_DAY,
+    maxAttemptsByIpEmail: envVars.MAX_ATTEMPS_BY_IP_EMAIL,
+    maxAttemptsPerEmail: envVars.MAX_ATTEMPS_PER_EMAIL,
   },
 };
