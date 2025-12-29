@@ -2,8 +2,8 @@ const jwt = require('jsonwebtoken');
 const dayjs = require('dayjs');
 const config = require('../config/config');
 const { tokenTypes } = require('../config/tokens');
-const { users } = require('../db/models');
 const ApiError = require('../utils/ApiError');
+const { userRepository } = require('../repositories');
 const httpStatus = require('http-status').default;
 
 /**
@@ -54,7 +54,7 @@ const verifyToken = async (token, type) => {
  * Generate authentication tokens
  */
 const generateAuthTokens = async ({ userId, role }) => {
-  const user = await users.findByPk(userId);
+  const user = await userRepository.getUserById(userId);
 
   if (!user) {
     throw new ApiError(

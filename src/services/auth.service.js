@@ -1,6 +1,6 @@
 const httpStatus = require('http-status').default;
 const bcrypt = require('bcryptjs');
-const userService = require('./user.service');
+const { userRepository } = require('../repositories');
 const tokenService = require('./token.service');
 const ApiError = require('../utils/ApiError');
 const { tokenTypes } = require('../config/tokens');
@@ -42,7 +42,7 @@ async function login(email, password, ipAddress) {
   }
 
   // Get user
-  const user = await userService.getUserByEmail(email);
+  // const user = await userService.getUserByEmail(email);
 
   // Check if user exists
   if (!user) {
@@ -129,7 +129,7 @@ async function refreshAuthToken(refreshToken) {
     );
 
     // Get user
-    const user = await userService.getUserById(payload.sub);
+    const user = await userRepository.getUserById(payload.sub);
 
     if (!user) {
       throw new ApiError(
@@ -189,7 +189,7 @@ async function refreshAuthToken(refreshToken) {
   }
 }
 async function logout(userId, accessToken) {
-  const user = await userService.getUserById(userId);
+  const user = await userRepository.getUserById(userId);
 
   if (!user) {
     throw new ApiError(

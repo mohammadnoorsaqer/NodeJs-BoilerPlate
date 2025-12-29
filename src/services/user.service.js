@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const bcrypt = require('bcryptjs');
 const { users } = require('../db/models');
+const { userRepository } = require('../repositories');
 const ApiError = require('../utils/ApiError');
 
 /**
@@ -8,7 +9,7 @@ const ApiError = require('../utils/ApiError');
  */
 async function createUser(userBody) {
   // Check if email already exists
-  if (await getUserByEmail(userBody.email)) {
+  if (await userRepository.getUserByEmail(userBody.email)) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
       'Email already taken',
@@ -37,24 +38,6 @@ async function createUser(userBody) {
   return userObj;
 }
 
-/**
- * Get user by ID
- */
-async function getUserById(id) {
-  const user = await users.findByPk(id);
-  return user;
-}
-
-/**
- * Get user by email
- */
-async function getUserByEmail(email) {
-  const user = await users.findOne({ where: { email } });
-  return user;
-}
-
 module.exports = {
   createUser,
-  getUserById,
-  getUserByEmail,
 };
