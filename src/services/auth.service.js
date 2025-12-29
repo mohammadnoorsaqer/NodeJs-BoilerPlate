@@ -42,7 +42,7 @@ async function login(email, password, ipAddress) {
   }
 
   // Get user
-  // const user = await userService.getUserByEmail(email);
+  const user = await userRepository.getUserByEmail(email);
 
   // Check if user exists
   if (!user) {
