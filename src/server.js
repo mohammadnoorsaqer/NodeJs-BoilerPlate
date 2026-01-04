@@ -1,36 +1,15 @@
 // server.js
 const http = require('http');
 const express = require('express');
-const cluster = require('cluster');
-const os = require('os');
 
 const config = require('./config/config');
 const loader = require('./loaders');
 const logger = require('./config/logger');
 
-const isProduction = process.env.NODE_ENV === 'production';
-const numCPUs = os.cpus().length;
-
-/* -------------------- MASTER (PROD ONLY) -------------------- */
-if (isProduction && cluster.isMaster) {
-  logger.info(`Master process ${process.pid} running (PRODUCTION)`);
-
-  for (let i = 0; i < numCPUs; i++) {
-    cluster.fork();
-  }
-
-  cluster.on('exit', (worker) => {
-    logger.error(`Worker ${worker.process.pid} died. Restarting...`);
-    cluster.fork();
-  });
-
-  return; // ⛔ master exits here
-}
-
-/* -------------------- WORKER or DEV -------------------- */
 const redisClient = require('./config/redis');
 const { closePool } = require('./config/postgres');
 
+/* -------------------- GRACEFUL SHUTDOWN -------------------- */
 const exitHandler = (server) => {
   if (!server) process.exit(1);
 
@@ -56,14 +35,13 @@ const unexpectedErrorHandler = (server) => (error) => {
   exitHandler(server);
 };
 
+/* -------------------- START SERVER -------------------- */
 const startServer = async () => {
   const app = express();
   await loader(app);
 
   const server = http.createServer(app).listen(config.PORT, () => {
-    logger.info(
-      `${isProduction ? 'Worker' : 'Dev server'} ${process.pid} listening on port ${config.PORT}`
-    );
+    logger.info(`Server ${process.pid} listening on port ${config.PORT}`);
   });
 
   process.on('uncaughtException', unexpectedErrorHandler(server));
