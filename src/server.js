@@ -1,29 +1,54 @@
-// server.js (or index.js)
+// server.js
 const http = require('http');
-const express = require('express'); // <-- add this
+const express = require('express');
+const cluster = require('cluster');
+const os = require('os');
+
 const config = require('./config/config');
-const loader = require('./loaders'); // your loader index.js
+const loader = require('./loaders');
 const logger = require('./config/logger');
+
+const isProduction = process.env.NODE_ENV === 'production';
+const numCPUs = os.cpus().length;
+
+/* -------------------- MASTER (PROD ONLY) -------------------- */
+if (isProduction && cluster.isMaster) {
+  logger.info(`Master process ${process.pid} running (PRODUCTION)`);
+
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
+
+  cluster.on('exit', (worker) => {
+    logger.error(`Worker ${worker.process.pid} died. Restarting...`);
+    cluster.fork();
+  });
+
+  return; // ⛔ master exits here
+}
+
+/* -------------------- WORKER or DEV -------------------- */
 const redisClient = require('./config/redis');
 const { closePool } = require('./config/postgres');
 
 const exitHandler = (server) => {
-  if (server) {
-    server.close(async () => {
-      logger.info('Server closed');
+  if (!server) process.exit(1);
 
-      try {
-        await Promise.all([redisClient.quit(), closePool()]);
-        logger.info('Database connections closed');
-      } catch (error) {
-        logger.error('Error closing database connections', error);
-      }
+  server.close(async () => {
+    logger.info(`Process ${process.pid} shutting down`);
 
-      process.exit(0);
-    });
-  } else {
-    process.exit(1);
-  }
+    try {
+      await Promise.all([
+        redisClient.quit(),
+        closePool(),
+      ]);
+      logger.info('DB connections closed');
+    } catch (err) {
+      logger.error('Error closing DB connections', err);
+    }
+
+    process.exit(0);
+  });
 };
 
 const unexpectedErrorHandler = (server) => (error) => {
@@ -32,26 +57,20 @@ const unexpectedErrorHandler = (server) => (error) => {
 };
 
 const startServer = async () => {
-  const app = express(); // <-- create Express app instance
-  await loader(app); // pass it to your loaders
+  const app = express();
+  await loader(app);
 
-  const httpServer = http.createServer(app);
-  const server = httpServer.listen(config.PORT, () => {
-    logger.info(`Server listening on port ${config.PORT}`);
+  const server = http.createServer(app).listen(config.PORT, () => {
+    logger.info(
+      `${isProduction ? 'Worker' : 'Dev server'} ${process.pid} listening on port ${config.PORT}`
+    );
   });
 
   process.on('uncaughtException', unexpectedErrorHandler(server));
   process.on('unhandledRejection', unexpectedErrorHandler(server));
 
-  process.on('SIGTERM', () => {
-    logger.info('SIGTERM received');
-    if (server) server.close();
-  });
-
-  process.on('SIGINT', () => {
-    logger.info('SIGINT received (Ctrl+C)');
-    if (server) server.close();
-  });
+  process.on('SIGTERM', () => exitHandler(server));
+  process.on('SIGINT', () => exitHandler(server));
 };
 
 startServer();
