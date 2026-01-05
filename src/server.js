@@ -17,10 +17,7 @@ const exitHandler = (server) => {
     logger.info(`Process ${process.pid} shutting down`);
 
     try {
-      await Promise.all([
-        redisClient.quit(),
-        closePool(),
-      ]);
+      await Promise.all([redisClient.quit(), closePool()]);
       logger.info('DB connections closed');
     } catch (err) {
       logger.error('Error closing DB connections', err);
