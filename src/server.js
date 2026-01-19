@@ -49,7 +49,7 @@ const startApp = async () => {
   process.on('SIGINT', () => exitHandler(server));
 };
 const startServer = async () => {
-  if (cluster.isPrimary) {
+  if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
     for (let i = 0; i < numCPUs; i++) cluster.fork();
 
     cluster.on('exit', (worker) => {
