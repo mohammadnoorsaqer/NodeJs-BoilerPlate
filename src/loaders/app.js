@@ -10,6 +10,7 @@ const { jwtStrategy } = require('../config/passport');
 const { xss } = require('express-xss-sanitizer');
 const helmet = require('helmet');
 const cors = require('cors');
+const compression = require('compression');
 const routes = require('../routes/v1');
 module.exports = async (app) => {
   app.use((req, res, next) => {
@@ -17,6 +18,9 @@ module.exports = async (app) => {
     req.postgres = postgresClient;
     next();
   });
+
+  //compression middleware
+  app.use(compression());
 
   // JSON middleware
   app.use(express.json());
