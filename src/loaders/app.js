@@ -20,7 +20,14 @@ module.exports = async (app) => {
   });
 
   //compression middleware
-  app.use(compression());
+  app.use(
+    compression({
+      filter: (req, res) => {
+        if (req.headers['authorization']) return false; // skip compression if auth header exists
+        return compression.filter(req, res);
+      },
+    }),
+  );
 
   // JSON middleware
   app.use(express.json());
