@@ -1,10 +1,12 @@
 // server.js
 const http = require('http');
 const express = require('express');
-
+const cluster = require('cluster');
+const process = require('process');
 const config = require('./config/config');
 const loader = require('./loaders');
 const logger = require('./config/logger');
+const numCPUs = require('node:os').availableParallelism();
 
 const redisClient = require('./config/redis');
 const { closePool } = require('./config/postgres');
@@ -33,7 +35,7 @@ const unexpectedErrorHandler = (server) => (error) => {
 };
 
 /* -------------------- START SERVER -------------------- */
-const startServer = async () => {
+const startApp = async () => {
   const app = express();
   await loader(app);
 
@@ -43,9 +45,20 @@ const startServer = async () => {
 
   process.on('uncaughtException', unexpectedErrorHandler(server));
   process.on('unhandledRejection', unexpectedErrorHandler(server));
-
   process.on('SIGTERM', () => exitHandler(server));
   process.on('SIGINT', () => exitHandler(server));
+};
+const startServer = async () => {
+  if (cluster.isPrimary) {
+    for (let i = 0; i < numCPUs; i++) cluster.fork();
+
+    cluster.on('exit', (worker) => {
+      logger.error(`Worker ${worker.process.pid} died. Restarting...`);
+      cluster.fork();
+    });
+  } else {
+    await startApp();
+  }
 };
 
 startServer();
