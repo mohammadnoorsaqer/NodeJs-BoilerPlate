@@ -14,7 +14,7 @@ const envVarSchema = joi
     SQL_USERNAME: joi.string().required(),
     SQL_HOST: joi.string().required(),
     SQL_DATABASE_NAME: joi.string().required(),
-    SQL_PASSWORD: joi.string().required(),
+    SQL_PASSWORD: joi.string().optional(),
     JWT_SECRET: joi.string().required(),
     JWT_ACCESS_EXPIRATION_MINUTES: joi.number().required(),
     JWT_REFRESH_EXPIRATION_MINUTES: joi.number().required(),

@@ -1,4 +1,4 @@
-const httpStatus = require('http-status');
+const httpStatus = require('http-status').default;
 const bcrypt = require('bcryptjs');
 const { users } = require('../db/models');
 const { userRepository } = require('../repositories');
