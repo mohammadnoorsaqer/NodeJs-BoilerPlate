@@ -1,14 +1,17 @@
 import http from 'http';
 import express from 'express';
 import cluster from 'cluster';
-import { availableParallelism } from 'node:os';
+import os from 'node:os';
 import config from './config/config';
 import load from './loaders';
 import logger from './config/logger';
 import redisClient from './config/redis';
 import { closePool } from './config/postgres';
 
-const numCPUs = availableParallelism();
+const numCPUs =
+  typeof os.availableParallelism === 'function'
+    ? os.availableParallelism()
+    : os.cpus().length;
 
 const exitHandler = (server: http.Server | null): void => {
   if (!server) {
