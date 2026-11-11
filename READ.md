@@ -7,7 +7,7 @@ This project uses Passport JWT with token versioning and a public-route bypass. 
 - **Refresh Token (longer-lived)**: Bearer for `/v1/auth/refresh-token`. Not persisted; token versioning is used to revoke.
 - **Token Versioning**: `users.token_version` is embedded in both tokens; bumping it revokes all current tokens.
 - **Status Checks**: Tokens are rejected if the user is `is_deleted`, `is_active` is false, or `is_active_user` is false.
-- **Public Routes**: Paths listed in `src/middlewares/authPublic.js` skip auth; everything else requires a valid access token.
+- **Public Routes**: Use `authPublic` middleware on routes where login is optional (see `src/middlewares/authPublic.ts`).
 
 ## Endpoints
 - `POST /v1/auth/register`
@@ -25,12 +25,12 @@ This project uses Passport JWT with token versioning and a public-route bypass. 
   - Action: increments `token_version` to revoke all existing tokens for the user.
 
 ## How verification works
-- `src/config/passport.js`:
+- `src/config/passport.ts`:
   - Validates signature, `type === ACCESS`, tokenVersion matches `user.token_version`, and user is active/not deleted.
-- `src/middlewares/auth.js`:
+- `src/middlewares/auth.ts`:
   - Wraps `passport.authenticate('jwt', { session: false })`; rejects with 401 on failure.
-- `src/middlewares/authPublic.js`:
-  - If request matches a public path (by `req.path` or `req.originalUrl`), skips auth; otherwise enforces `auth()`.
+- `src/middlewares/authPublic.ts`:
+  - Optionally attaches `req.user` when a valid token is present; never rejects unauthenticated requests.
 
 ## Headers & usage
 - Protected requests: `Authorization: Bearer <accessToken>`

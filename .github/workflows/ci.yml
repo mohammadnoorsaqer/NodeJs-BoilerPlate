@@ -38,6 +38,9 @@ jobs:
       - name: Run Prettier check
         run: npm run prettier
 
+      - name: Typecheck
+        run: npm run typecheck
+
   docker-build:
     name: Docker Build Check
     runs-on: ubuntu-latest
