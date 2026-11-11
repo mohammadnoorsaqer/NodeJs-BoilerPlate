@@ -9,7 +9,10 @@ import { successHandler, errorHandler } from '../config/morgan';
 import { ApiError } from '../utils/ApiError';
 import db from '../db/models';
 import { postgresClient } from '../config/postgres';
-import { errorConverter, errorHandler as globalErrorHandler } from '../middlewares/error';
+import {
+  errorConverter,
+  errorHandler as globalErrorHandler,
+} from '../middlewares/error';
 import { jwtStrategy } from '../config/passport';
 import routes from '../routes/v1';
 

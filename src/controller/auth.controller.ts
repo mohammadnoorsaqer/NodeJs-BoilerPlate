@@ -53,7 +53,7 @@ export const refreshToken = catchAsync(async (req, res) => {
 export const logout = catchAsync(async (req, res) => {
   const userId = req.user!.id;
   const authHeader = req.headers.authorization;
-  const accessToken = authHeader ? authHeader.split(' ')[1] ?? null : null;
+  const accessToken = authHeader ? (authHeader.split(' ')[1] ?? null) : null;
 
   await authService.logout(userId, accessToken);
   return successResponse(

@@ -10,7 +10,9 @@ type RegisterUserInput = Omit<UserCreationAttributes, 'password_hash'> & {
   password?: string;
 };
 
-export async function createUser(userBody: RegisterUserInput): Promise<SafeUser> {
+export async function createUser(
+  userBody: RegisterUserInput,
+): Promise<SafeUser> {
   if (await userRepository.getUserByEmail(userBody.email)) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,

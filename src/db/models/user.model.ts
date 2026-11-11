@@ -1,9 +1,4 @@
-import {
-  DataTypes,
-  Model,
-  type Optional,
-  type Sequelize,
-} from 'sequelize';
+import { DataTypes, Model, type Optional, type Sequelize } from 'sequelize';
 import type { UserRole } from '../../types/roles';
 
 export type UserGender = 'male' | 'female';

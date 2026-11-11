@@ -52,7 +52,11 @@ export const errorConverter = (
       joiErr.stack,
     );
   } else if (!(err instanceof ApiError)) {
-    const maybeErr = err as { statusCode?: number; message?: string; stack?: string };
+    const maybeErr = err as {
+      statusCode?: number;
+      message?: string;
+      stack?: string;
+    };
     const statusCode =
       maybeErr.statusCode && Number.isInteger(maybeErr.statusCode)
         ? maybeErr.statusCode
@@ -77,7 +81,8 @@ export const errorHandler = (
   res: Response,
   _next: NextFunction,
 ): void => {
-  let { statusCode, message, message_ar, stack, retryAfter } = err;
+  let { statusCode, message, message_ar } = err;
+  const { stack, retryAfter } = err;
 
   if (!statusCode || Number.isNaN(statusCode)) {
     statusCode = 500;

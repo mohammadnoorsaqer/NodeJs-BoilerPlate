@@ -1,9 +1,7 @@
 import { User } from '../db/models';
 import type { UserAttributes } from '../db/models/user.model';
 
-export async function getUserByEmail(
-  email: string,
-): Promise<User | null> {
+export async function getUserByEmail(email: string): Promise<User | null> {
   return User.findOne({ where: { email } });
 }
 

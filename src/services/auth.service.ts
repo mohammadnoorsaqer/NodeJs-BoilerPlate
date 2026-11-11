@@ -77,7 +77,10 @@ async function login(
     );
   }
 
-  const isPasswordMatch = await bcrypt.compare(password, user.password_hash ?? '');
+  const isPasswordMatch = await bcrypt.compare(
+    password,
+    user.password_hash ?? '',
+  );
 
   if (!isPasswordMatch) {
     try {

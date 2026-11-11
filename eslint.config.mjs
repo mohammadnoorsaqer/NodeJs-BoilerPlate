@@ -6,13 +6,24 @@ import securityPlugin from 'eslint-plugin-security';
 import tseslint from 'typescript-eslint';
 import { defineConfig } from 'eslint/config';
 
+const sharedRules = {
+  'import/no-dynamic-require': 'off',
+  'prettier/prettier': 'error',
+  'security/detect-object-injection': 'off',
+  'security/detect-non-literal-fs-filename': 'warn',
+  'security/detect-non-literal-regexp': 'warn',
+  'security/detect-eval-with-expression': 'error',
+  'security/detect-unsafe-regex': 'warn',
+  'security/detect-child-process': 'warn',
+};
+
 export default defineConfig([
   {
     ignores: ['dist/**', 'node_modules/**', 'src/db/migrations/**'],
   },
-  ...tseslint.configs.recommended,
   {
-    files: ['**/*.{ts,tsx,mjs,cjs,js}'],
+    files: ['**/*.{ts,tsx}'],
+    extends: [...tseslint.configs.recommended],
     plugins: {
       import: importPlugin,
       prettier: prettierPlugin,
@@ -26,24 +37,29 @@ export default defineConfig([
       },
     },
     rules: {
-      'import/no-dynamic-require': 'off',
+      ...sharedRules,
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'warn',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
-      'prettier/prettier': 'error',
-      'security/detect-object-injection': 'off',
-      'security/detect-non-literal-fs-filename': 'warn',
-      'security/detect-non-literal-regexp': 'warn',
-      'security/detect-eval-with-expression': 'error',
-      'security/detect-unsafe-regex': 'warn',
-      'security/detect-child-process': 'warn',
     },
   },
   {
     files: ['**/*.{js,mjs,cjs}'],
-    ...js.configs.recommended,
+    extends: [js.configs.recommended],
+    plugins: {
+      import: importPlugin,
+      prettier: prettierPlugin,
+      security: securityPlugin,
+    },
+    languageOptions: {
+      globals: globals.node,
+    },
+    rules: {
+      ...sharedRules,
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
   },
 ]);
